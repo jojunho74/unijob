@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>G-TELP 데이터 관리자 (Admin)</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body { 
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      padding: 40px 20px; 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    
+    .upload-section {
+      background: #f8f9fa;
+      border: 2px dashed #dee2e6;
+      border-radius: 12px;
+      padding: 30px;
+      text-align: center;
+      margin-bottom: 20px;
+      transition: all 0.3s;
+    }
+    
+    .upload-section:hover {
+      border-color: #667eea;
+      background: #f0f4ff;
+    }
+    
+    input[type="file"] {
+      display: none;
+    }
+    
+    .file-label {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      padding: 12px 30px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    
+    .file-label:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    .file-name {
+      margin-top: 15px;
+      color: #666;
+      font-size: 14px;
+    }
+    
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      width: 100%;
+      transition: all 0.3s;
+      margin-bottom: 20px;
+    }
+    
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .stat-box {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+    }
+    
+    .stat-number {
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+    
+    .preview {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    
+    .preview h3 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+    
+    pre {
+      background: #282c34;
+      color: #abb2bf;
+      padding: 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.6;
+      max-height: 400px;
+    }
+    
+    .alert {
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    
+    .alert-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .alert-error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .alert-warning {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    .download-btn {
+      background: #28a745;
+      margin-top: 15px;
+    }
+    
+    .download-btn:hover {
+      background: #218838;
+    }
+
+    .feature-info {
+      background: #e8f5e9;
+      border-left: 4px solid #4caf50;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+
+    .feature-info h4 {
+      color: #2e7d32;
+      margin-bottom: 10px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 10px 0;
+    }
+
+    .feature-list li {
+      padding: 5px 0;
+      color: #555;
+      font-size: 13px;
+    }
+
+    .feature-list li:before {
+      content: "✓ ";
+      color: #4caf50;
+      font-weight: bold;
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>
+    <span>📂</span>
+    G-TELP CSV → JSON 변환기
+  </h1>
+  <p class="subtitle">✨ AI 제목 분석으로 기업명, 직종명, 접수일 자동 추출</p>
+  
+  <div class="feature-info">
+    <h4>🤖 자동 제목 분석 기능</h4>
+    <ul class="feature-list">
+      <li>채용공고 제목에서 <strong>기업명</strong> 자동 추출</li>
+      <li>채용공고 제목에서 <strong>직종명</strong> 자동 추출</li>
+      <li>채용공고 제목에서 <strong>접수일/마감일</strong> 자동 추출</li>
+      <li>추출된 정보는 별도 필드로 저장 (companyExtracted, positionExtracted, deadlineExtracted)</li>
+    </ul>
+  </div>
+  
+  <div class="upload-section">
+    <label for="csvFile" class="file-label">
+      📁 CSV 파일 선택
+    </label>
+    <input type="file" id="csvFile" accept=".csv">
+    <div id="fileName" class="file-name"></div>
+  </div>
+  
+  <button id="convertBtn" onclick="convertCSVtoJSON()" disabled>
+    🔄 JSON으로 변환하기
+  </button>
+  
+  <div id="alertBox" class="hidden"></div>
+  
+  <div id="statsSection" class="hidden">
+    <div class="stats">
+      <div class="stat-box">
+        <div class="stat-number" id="totalRows">0</div>
+        <div class="stat-label">총 데이터 수</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number" id="extractedCompanies">0</div>
+        <div class="stat-label">기업명 추출</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number" id="extractedPositions">0</div>
+        <div class="stat-label">직종명 추출</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number" id="extractedDeadlines">0</div>
+        <div class="stat-label">접수일 추출</div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="previewSection" class="preview hidden">
+    <h3>📋 JSON 미리보기</h3>
+    <pre id="output"></pre>
+    <button id="downloadBtn" class="download-btn hidden" onclick="downloadJSON()">
+      💾 gtelp_data.json 다운로드
+    </button>
+  </div>
+</div>
+
+<script>
+let convertedData = null;
+
+// 파일 선택 이벤트
+document.getElementById('csvFile').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (file) {
+    document.getElementById('fileName').textContent = `선택된 파일: ${file.name}`;
+    document.getElementById('convertBtn').disabled = false;
+  }
+});
+
+// CSV 파싱 함수
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const result = [];
+  
+  for (let line of lines) {
+    const row = [];
+    let cell = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        row.push(cell.trim());
+        cell = '';
+      } else {
+        cell += char;
+      }
+    }
+    row.push(cell.trim());
+    result.push(row);
+  }
+  
+  return result;
+}
+
+// 제목에서 기업명 추출
+function extractCompanyName(title) {
+  // 패턴 1: [기업명] 또는 (기업명)
+  const bracketMatch = title.match(/[\[【\(]([^)\]】]+)[\]】\)]/);
+  if (bracketMatch) {
+    const name = bracketMatch[1].trim();
+    // 채용, 모집 등의 키워드가 없으면 기업명으로 판단
+    if (!name.match(/채용|모집|공고|구인|입사|지원/)) {
+      return name;
+    }
+  }
+  
+  // 패턴 2: "회사명 채용" 형태
+  const companyMatch = title.match(/^([가-힣a-zA-Z0-9&\s]+?)\s*(채용|모집|구인)/);
+  if (companyMatch) {
+    return companyMatch[1].trim();
+  }
+  
+  // 패턴 3: 주식회사, ㈜, (주) 포함
+  const corpMatch = title.match(/(주식회사|㈜|\(주\))\s*([가-힣a-zA-Z0-9]+)/);
+  if (corpMatch) {
+    return corpMatch[0].trim();
+  }
+  
+  return '';
+}
+
+// 제목에서 직종명 추출
+function extractPosition(title) {
+  // 일반적인 직종 키워드
+  const positionKeywords = [
+    '교사', '강사', '인스트럭터', '선생님', '튜터',
+    '영업', '마케팅', '매니저', '관리자', '담당자',
+    '개발자', '프로그래머', '엔지니어', '디자이너',
+    '코디네이터', '어시스턴트', '비서', '사무원',
+    '연구원', '분석가', '컨설턴트', '전문가',
+    '스크랩', '스캐너', '스크램', 'G-TELP', 'GTELP',
+    'teacher', 'instructor', 'manager', 'coordinator',
+    'specialist', 'analyst', 'consultant', 'assistant'
+  ];
+  
+  for (let keyword of positionKeywords) {
+    if (title.toLowerCase().includes(keyword.toLowerCase())) {
+      // 키워드 주변 텍스트 추출
+      const regex = new RegExp(`([가-힣a-zA-Z\\s]{0,10}${keyword}[가-힣a-zA-Z\\s]{0,10})`, 'i');
+      const match = title.match(regex);
+      if (match) {
+        return match[1].trim();
+      }
+    }
+  }
+  
+  // 패턴: "~직" 형태
+  const jikMatch = title.match(/([가-힣]+직)/);
+  if (jikMatch) {
+    return jikMatch[1];
+  }
+  
+  return '';
+}
+
+// 제목에서 접수일/마감일 추출
+function extractDeadline(title) {
+  // 패턴 1: YYYY-MM-DD 또는 YYYY.MM.DD
+  const dateMatch = title.match(/\d{4}[-./]\d{1,2}[-./]\d{1,2}/);
+  if (dateMatch) {
+    return dateMatch[0];
+  }
+  
+  // 패턴 2: MM/DD 또는 MM.DD
+  const shortDateMatch = title.match(/\d{1,2}[./]\d{1,2}/);
+  if (shortDateMatch) {
+    return shortDateMatch[0];
+  }
+  
+  // 패턴 3: D-숫자
+  const dDayMatch = title.match(/D-\d+/i);
+  if (dDayMatch) {
+    return dDayMatch[0];
+  }
+  
+  // 패턴 4: ~월 ~일
+  const koreanDateMatch = title.match(/\d{1,2}월\s*\d{1,2}일/);
+  if (koreanDateMatch) {
+    return koreanDateMatch[0];
+  }
+  
+  // 패턴 5: "~까지", "~마감"
+  const untilMatch = title.match(/(\d{1,2}[./]\d{1,2})\s*(까지|마감)/);
+  if (untilMatch) {
+    return untilMatch[1] + ' 마감';
+  }
+  
+  return '';
+}
+
+// 파일 크기 포맷
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+// 알림 표시
+function showAlert(message, type = 'info') {
+  const alertBox = document.getElementById('alertBox');
+  alertBox.className = `alert alert-${type}`;
+  alertBox.textContent = message;
+  alertBox.classList.remove('hidden');
+  
+  if (type === 'success') {
+    setTimeout(() => alertBox.classList.add('hidden'), 5000);
+  }
+}
+
+// URL 유효성 검사
+function isValidUrl(string) {
+  if (!string) return false;
+  try {
+    const url = new URL(string);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch (_) {
+    return false;
+  }
+}
+
+// URL 정리
+function cleanUrl(url) {
+  if (!url) return '';
+  
+  url = url.trim();
+  
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  
+  if (url.startsWith('www.') || /^[a-z0-9-]+\.[a-z]{2,}/i.test(url)) {
+    return 'https://' + url;
+  }
+  
+  return url;
+}
+
+// CSV → JSON 변환
+function convertCSVtoJSON() {
+  const fileInput = document.getElementById('csvFile');
+  const file = fileInput.files[0];
+  
+  if (!file) {
+    showAlert('CSV 파일을 선택하세요.', 'error');
+    return;
+  }
+  
+  const reader = new FileReader();
+  
+  reader.onload = function(e) {
+    try {
+      const csvText = e.target.result;
+      const rows = parseCSV(csvText);
+      
+      if (rows.length < 2) {
+        showAlert('CSV 파일에 데이터가 없습니다.', 'error');
+        return;
+      }
+      
+      const headers = rows[0].map(h => h.trim());
+      
+      console.log('📋 CSV 헤더:', headers);
+      
+      // 통계 카운터
+      let extractedCompaniesCount = 0;
+      let extractedPositionsCount = 0;
+      let extractedDeadlinesCount = 0;
+      
+      // JSON 데이터 생성
+      const jsonData = rows.slice(1).map((row, index) => {
+        const jsonObj = {};
+        
+        headers.forEach((header, i) => {
+          let value = row[i] ? row[i].trim() : "";
+          
+          // 따옴표 제거
+          if (value.startsWith('"') && value.endsWith('"')) {
+            value = value.slice(1, -1);
+          }
+          
+          // job_url 필드만 URL 정리
+          if (header === 'job_url' && value) {
+            value = cleanUrl(value);
+          }
+          
+          jsonObj[header] = value;
+        });
+        
+        // 제목 분석 및 추가 필드 생성
+        const title = jsonObj.job_title || '';
+        
+        if (title) {
+          // 기업명 추출
+          const extractedCompany = extractCompanyName(title);
+          if (extractedCompany) {
+            jsonObj.companyExtracted = extractedCompany;
+            extractedCompaniesCount++;
+          }
+          
+          // 직종명 추출
+          const extractedPosition = extractPosition(title);
+          if (extractedPosition) {
+            jsonObj.positionExtracted = extractedPosition;
+            extractedPositionsCount++;
+          }
+          
+          // 접수일/마감일 추출
+          const extractedDeadline = extractDeadline(title);
+          if (extractedDeadline) {
+            jsonObj.deadlineExtracted = extractedDeadline;
+            extractedDeadlinesCount++;
+          }
+          
+          console.log(`[${index}] 제목 분석:`, {
+            원본: title,
+            기업명: extractedCompany || '없음',
+            직종명: extractedPosition || '없음',
+            접수일: extractedDeadline || '없음'
+          });
+        }
+        
+        return jsonObj;
+      });
+      
+      // 빈 행 제거
+      const filteredData = jsonData.filter(item => {
+        return Object.values(item).some(val => val !== "");
+      });
+      
+      convertedData = filteredData;
+      
+      // 통계 표시
+      document.getElementById('totalRows').textContent = filteredData.length;
+      document.getElementById('extractedCompanies').textContent = extractedCompaniesCount;
+      document.getElementById('extractedPositions').textContent = extractedPositionsCount;
+      document.getElementById('extractedDeadlines').textContent = extractedDeadlinesCount;
+      document.getElementById('statsSection').classList.remove('hidden');
+      
+      // 미리보기 (처음 2개만)
+      const preview = filteredData.slice(0, 2);
+      const jsonString = JSON.stringify(preview, null, 2);
+      document.getElementById('output').textContent = jsonString + 
+        (filteredData.length > 2 ? `\n\n... 외 ${filteredData.length - 2}개 항목` : '');
+      
+      document.getElementById('previewSection').classList.remove('hidden');
+      document.getElementById('downloadBtn').classList.remove('hidden');
+      
+      showAlert(`✅ 변환 완료! 기업명 ${extractedCompaniesCount}개, 직종명 ${extractedPositionsCount}개, 접수일 ${extractedDeadlinesCount}개 추출`, 'success');
+      
+      console.log('✨ 변환 샘플:', filteredData[0]);
+      
+    } catch (error) {
+      showAlert('CSV 파일 형식이 올바르지 않습니다: ' + error.message, 'error');
+      console.error(error);
+    }
+  };
+  
+  reader.onerror = function() {
+    showAlert('파일 읽기 중 오류가 발생했습니다.', 'error');
+  };
+  
+  reader.readAsText(file, 'UTF-8');
+}
+
+// JSON 다운로드
+function downloadJSON() {
+  if (!convertedData) {
+    showAlert('변환된 데이터가 없습니다.', 'error');
+    return;
+  }
+  
+  const jsonString = JSON.stringify(convertedData, null, 2);
+  const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'gtelp_data.json';
+  link.click();
+  
+  showAlert('💾 gtelp_data.json 파일이 다운로드되었습니다!', 'success');
+}
+</script>
+
+</body>
+</html>
