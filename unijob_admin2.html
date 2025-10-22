@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniJob Admin - CSV to JSON Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .upload-area {
+            border: 3px dashed #4A90E2;
+            border-radius: 15px;
+            padding: 60px;
+            text-align: center;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+        }
+
+        .upload-area:hover {
+            background: #e9ecef;
+            border-color: #357ABD;
+        }
+
+        .upload-area.dragover {
+            background: #d4edff;
+            border-color: #357ABD;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            font-size: 14px;
+            color: #666;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .preview-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        thead {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #333;
+            font-size: 13px;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        tbody tr:hover {
+            background: #e3f2fd;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #218838;
+        }
+
+        .btn-secondary {
+            background: #4A90E2;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #357ABD;
+        }
+
+        .btn-danger {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #5a6268;
+        }
+
+        .mapping-info {
+            background: #f8f9fa;
+            border-left: 4px solid #4A90E2;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        .mapping-info h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .mapping-table {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .mapping-header {
+            font-weight: 600;
+            color: #4A90E2;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .mapping-row {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+
+            .upload-area {
+                padding: 40px 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .mapping-table {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 UniJob Admin</h1>
+            <p>CSV to JSON Converter - View2 Compatible</p>
+        </div>
+
+        <div class="content">
+            <div id="alertBox" class="alert"></div>
+
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">CSV 파일을 여기에 드래그하거나 클릭하세요</div>
+                <div class="upload-hint">MAJOR_CORP_JOBS_*.csv 파일 지원</div>
+                <input type="file" id="fileInput" accept=".csv">
+            </div>
+
+            <div class="mapping-info">
+                <h3>📋 CSV → JSON 매핑 정보</h3>
+                <div class="mapping-table">
+                    <div class="mapping-header">CSV 컬럼</div>
+                    <div class="mapping-header">JSON 키</div>
+                    <div class="mapping-header">View2 표시</div>
+                    
+                    <div class="mapping-row">job_title</div>
+                    <div class="mapping-row">jobTitle</div>
+                    <div class="mapping-row">직무</div>
+                    
+                    <div class="mapping-row">company_name</div>
+                    <div class="mapping-row">companyName</div>
+                    <div class="mapping-row">기업명</div>
+                    
+                    <div class="mapping-row">company_size</div>
+                    <div class="mapping-row">companySize</div>
+                    <div class="mapping-row">규모</div>
+                    
+                    <div class="mapping-row">company_type</div>
+                    <div class="mapping-row">companyType</div>
+                    <div class="mapping-row">유형</div>
+                    
+                    <div class="mapping-row">industry</div>
+                    <div class="mapping-row">industry</div>
+                    <div class="mapping-row">산업</div>
+                    
+                    <div class="mapping-row">employee_count</div>
+                    <div class="mapping-row">employeeCount</div>
+                    <div class="mapping-row">직원수</div>
+                    
+                    <div class="mapping-row">location</div>
+                    <div class="mapping-row">location</div>
+                    <div class="mapping-row">지역</div>
+                    
+                    <div class="mapping-row">job_type</div>
+                    <div class="mapping-row">jobType</div>
+                    <div class="mapping-row">고용형태</div>
+                    
+                    <div class="mapping-row">deadline</div>
+                    <div class="mapping-row">deadline</div>
+                    <div class="mapping-row">마감일</div>
+                    
+                    <div class="mapping-row">salary</div>
+                    <div class="mapping-row">salary</div>
+                    <div class="mapping-row">급여</div>
+                    
+                    <div class="mapping-row">job_url</div>
+                    <div class="mapping-row">jobUrl</div>
+                    <div class="mapping-row">URL</div>
+                    
+                    <div class="mapping-row">keyword_matched</div>
+                    <div class="mapping-row">keywordMatched</div>
+                    <div class="mapping-row">키워드</div>
+                    
+                    <div class="mapping-row">collection_time</div>
+                    <div class="mapping-row">collectionTime</div>
+                    <div class="mapping-row">수집시간</div>
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                데이터 처리 중<span id="loadingDots">...</span>
+            </div>
+
+            <div id="statsSection" style="display: none;">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">총 레코드 수</div>
+                        <div class="stat-value" id="totalRecords">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">필드 수</div>
+                        <div class="stat-value" id="fieldCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">파일 크기</div>
+                        <div class="stat-value" id="fileSize">0 KB</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">업로드 시간</div>
+                        <div class="stat-value" id="uploadTime" style="font-size: 18px;">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="previewSection" class="preview-section" style="display: none;">
+                <h2 class="section-title">📋 데이터 미리보기 (상위 10개)</h2>
+                <div style="overflow-x: auto;">
+                    <table id="previewTable">
+                        <thead id="previewHeader"></thead>
+                        <tbody id="previewBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="downloadJsonBtn" disabled>
+                    📦 JSON 다운로드 (View2 호환)
+                </button>
+                <button class="btn btn-secondary" id="downloadCsvBtn" disabled>
+                    📥 CSV 다운로드
+                </button>
+                <button class="btn btn-danger" id="resetBtn" disabled>
+                    🔄 초기화
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let csvData = [];
+        let jsonData = [];
+
+        // 업로드 영역 이벤트
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        // 파일 처리
+        function handleFile(file) {
+            if (!file.name.endsWith('.csv')) {
+                showAlert('CSV 파일만 업로드 가능합니다.', 'error');
+                return;
+            }
+
+            showLoading(true);
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    parseCSV(e.target.result);
+                    convertToJSON();
+                    displayStats(file);
+                    displayPreview();
+                    enableButtons();
+                    showAlert('✅ 파일이 성공적으로 업로드되었습니다!', 'success');
+                    showLoading(false);
+                } catch (error) {
+                    showAlert('❌ 파일 처리 중 오류가 발생했습니다: ' + error.message, 'error');
+                    showLoading(false);
+                }
+            };
+            reader.readAsText(file, 'utf-8');
+        }
+
+        // CSV 파싱
+        function parseCSV(text) {
+            const lines = text.split('\n').filter(line => line.trim());
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            
+            csvData = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index] ? values[index].replace(/"/g, '').trim() : '';
+                });
+                if (row.job_title || row.company_name) {
+                    csvData.push(row);
+                }
+            }
+        }
+
+        // JSON 변환 (View2 호환)
+        function convertToJSON() {
+            jsonData = csvData.map((row, index) => ({
+                id: index + 1,
+                jobTitle: row.job_title || '',
+                companyName: row.company_name || '',
+                companySize: row.company_size || '',
+                companyType: row.company_type || '',
+                industry: row.industry || '',
+                employeeCount: row.employee_count || '',
+                location: row.location || '',
+                jobType: row.job_type || '',
+                deadline: row.deadline || '',
+                salary: row.salary || '',
+                jobUrl: row.job_url || '',
+                keywordMatched: row.keyword_matched || '',
+                collectionTime: row.collection_time || ''
+            }));
+        }
+
+        // 통계 표시
+        function displayStats(file) {
+            document.getElementById('statsSection').style.display = 'block';
+            document.getElementById('totalRecords').textContent = csvData.length.toLocaleString();
+            document.getElementById('fieldCount').textContent = '13';
+            
+            const sizeKB = (file.size / 1024).toFixed(2);
+            const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+            document.getElementById('fileSize').textContent = file.size > 1024 * 1024 ? 
+                `${sizeMB} MB` : `${sizeKB} KB`;
+            
+            document.getElementById('uploadTime').textContent = new Date().toLocaleTimeString();
+        }
+
+        // 미리보기 표시
+        function displayPreview() {
+            document.getElementById('previewSection').style.display = 'block';
+            
+            const headers = ['ID', '직무', '기업명', '규모', '산업', '지역', '고용형태', '마감일'];
+            const headerRow = document.getElementById('previewHeader');
+            headerRow.innerHTML = headers.map(h => `<th>${h}</th>`).join('');
+            
+            const tbody = document.getElementById('previewBody');
+            tbody.innerHTML = '';
+            
+            jsonData.slice(0, 10).forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.id}</td>
+                    <td>${row.jobTitle.substring(0, 40)}${row.jobTitle.length > 40 ? '...' : ''}</td>
+                    <td>${row.companyName}</td>
+                    <td>${row.companySize}</td>
+                    <td>${row.industry}</td>
+                    <td>${row.location}</td>
+                    <td>${row.jobType}</td>
+                    <td>${row.deadline}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 버튼 활성화
+        function enableButtons() {
+            document.getElementById('downloadJsonBtn').disabled = false;
+            document.getElementById('downloadCsvBtn').disabled = false;
+            document.getElementById('resetBtn').disabled = false;
+        }
+
+        // JSON 다운로드
+        document.getElementById('downloadJsonBtn').addEventListener('click', () => {
+            const jsonString = JSON.stringify(jsonData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `major_corp_jobs_${Date.now()}.json`;
+            link.click();
+            showAlert('✅ JSON 파일이 다운로드되었습니다!', 'success');
+        });
+
+        // CSV 다운로드
+        document.getElementById('downloadCsvBtn').addEventListener('click', () => {
+            const headers = ['ID', 'jobTitle', 'companyName', 'companySize', 'companyType', 'industry', 
+                            'employeeCount', 'location', 'jobType', 'deadline', 'salary', 
+                            'jobUrl', 'keywordMatched', 'collectionTime'];
+            
+            const csvContent = [
+                headers.join(','),
+                ...jsonData.map(row => 
+                    headers.map(h => `"${row[h] || ''}"`).join(',')
+                )
+            ].join('\n');
+            
+            const BOM = '\uFEFF';
+            const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `major_corp_jobs_${Date.now()}.csv`;
+            link.click();
+            showAlert('✅ CSV 파일이 다운로드되었습니다!', 'success');
+        });
+
+        // 초기화
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            if (confirm('모든 데이터를 초기화하시겠습니까?')) {
+                csvData = [];
+                jsonData = [];
+                fileInput.value = '';
+                document.getElementById('statsSection').style.display = 'none';
+                document.getElementById('previewSection').style.display = 'none';
+                document.getElementById('downloadJsonBtn').disabled = true;
+                document.getElementById('downloadCsvBtn').disabled = true;
+                document.getElementById('resetBtn').disabled = true;
+                showAlert('🔄 데이터가 초기화되었습니다.', 'info');
+            }
+        });
+
+        // 알림 표시
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.className = `alert alert-${type} show`;
+            alertBox.textContent = message;
+            
+            setTimeout(() => {
+                alertBox.classList.remove('show');
+            }, 5000);
+        }
+
+        // 로딩 표시
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            loading.className = show ? 'loading show' : 'loading';
+            
+            if (show) {
+                let dots = 1;
+                const interval = setInterval(() => {
+                    document.getElementById('loadingDots').textContent = '.'.repeat(dots);
+                    dots = (dots % 3) + 1;
+                    if (!loading.classList.contains('show')) {
+                        clearInterval(interval);
+                    }
+                }, 500);
+            }
+        }
+    </script>
+</body>
+</html>
