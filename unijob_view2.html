@@ -11,7 +11,6 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -27,14 +26,12 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
         }
-
         .header {
-            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+          background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
             color: white;
             padding: 30px;
             text-align: center;
         }
-
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
@@ -646,6 +643,10 @@
             <p>채용 데이터 분석 및 시각화 플랫폼</p>
         </div>
 
+<img src="https://raw.githubusercontent.com/jojunho74/unijob/main/headimgae.png" 
+
+     class="header-image" 
+     style="width:100%; height:auto; display:block; margin-bottom:10px;">
         <div class="nav-menu">
             <div class="nav-item active" onclick="showTab('data')">
                 📋 데이터
@@ -678,8 +679,7 @@
                     </select>
                 </div>
                 <div class="action-buttons">
-                    <button class="btn btn-primary" onclick="downloadCSV()">📥 CSV 다운로드</button>
-                    <button class="btn btn-success" onclick="downloadJSON()">📦 JSON 다운로드</button>
+  
                     <button class="btn btn-secondary" onclick="resetFilters()">🔄 초기화</button>
                 </div>
             </div>
