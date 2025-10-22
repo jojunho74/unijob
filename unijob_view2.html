@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UniJob 채용 데이터 분석 플랫폼 - Ultimate Edition</title>
+    <title>UniJob View2 - JSON 데이터 뷰어</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <style>
         * {
@@ -28,7 +28,6 @@
             overflow: hidden;
         }
 
-        /* 헤더 */
         .header {
             background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
             color: white;
@@ -47,7 +46,47 @@
             opacity: 0.9;
         }
 
-        /* 상단 네비게이션 메뉴 */
+        .file-upload-bar {
+            background: #f8f9fa;
+            padding: 15px 30px;
+            border-bottom: 2px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .file-upload-btn {
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .file-name {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .data-count {
+            margin-left: auto;
+            color: #4A90E2;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
         .nav-menu {
             display: flex;
             background: #f8f9fa;
@@ -81,7 +120,6 @@
             border-bottom-color: #4A90E2;
         }
 
-        /* 탭 컨텐츠 */
         .tab-content {
             display: none;
             padding: 30px;
@@ -97,7 +135,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 통계 카드 */
         .stats-overview {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -138,7 +175,6 @@
             opacity: 0.8;
         }
 
-        /* 차트 그리드 */
         .charts-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
@@ -172,7 +208,6 @@
             height: 350px;
         }
 
-        /* 원본 테이블 스타일 보존 */
         .controls {
             margin-bottom: 25px;
             display: flex;
@@ -254,6 +289,15 @@
 
         .btn-secondary:hover {
             background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
         }
 
         table {
@@ -350,7 +394,6 @@
             text-decoration: underline;
         }
 
-        /* 모달 */
         .modal {
             display: none;
             position: fixed;
@@ -434,7 +477,6 @@
             flex: 1;
         }
 
-        /* TOP 기업 리스트 */
         .top-companies-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -480,7 +522,6 @@
             font-size: 14px;
         }
 
-        /* 페이지네이션 */
         .pagination {
             display: flex;
             justify-content: center;
@@ -516,7 +557,61 @@
             font-weight: 600;
         }
 
-        /* 반응형 */
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 3000;
+            animation: slideIn 0.3s ease;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        #fileInput {
+            display: none;
+        }
+
         @media (max-width: 768px) {
             .charts-grid {
                 grid-template-columns: 1fr;
@@ -563,46 +658,24 @@
                 padding: 10px;
             }
         }
-
-        /* 로딩 */
-        .loading {
-            text-align: center;
-            padding: 50px;
-            font-size: 18px;
-            color: #666;
-        }
-
-        .loading::after {
-            content: '...';
-            animation: dots 1.5s steps(4, end) infinite;
-        }
-
-        @keyframes dots {
-            0%, 20% { content: '.'; }
-            40% { content: '..'; }
-            60%, 100% { content: '...'; }
-        }
-
-        .error-message {
-            background: #fee;
-            border: 2px solid #fcc;
-            color: #c00;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px;
-            text-align: center;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- 헤더 -->
         <div class="header">
-            <h1>📊 UniJob 채용 데이터 분석 플랫폼</h1>
-            <p>실시간 채용 트렌드 분석 및 통계 대시보드</p>
+            <h1>📊 UniJob View2</h1>
+            <p>채용 데이터 분석 및 시각화 플랫폼</p>
         </div>
 
-        <!-- 네비게이션 메뉴 -->
+        <div class="file-upload-bar">
+            <button class="file-upload-btn" onclick="document.getElementById('fileInput').click()">
+                📂 JSON 파일 불러오기
+            </button>
+            <input type="file" id="fileInput" accept=".json" onchange="loadJSONFile(event)">
+            <span class="file-name" id="fileName">파일을 선택하세요</span>
+            <span class="data-count" id="dataCount">데이터: 0개</span>
+        </div>
+
         <div class="nav-menu">
             <div class="nav-item active" onclick="showTab('data')">
                 📋 데이터
@@ -618,7 +691,6 @@
             </div>
         </div>
 
-        <!-- 탭 1: 데이터 테이블 (원본 기능 전체 보존) -->
         <div id="data-tab" class="tab-content active">
             <div class="controls">
                 <div class="search-box">
@@ -640,7 +712,8 @@
                 </div>
                 <div class="action-buttons">
                     <button class="btn btn-primary" onclick="downloadCSV()">📥 CSV 다운로드</button>
-                    <button class="btn btn-secondary" onclick="resetFilters()">🔄 필터 초기화</button>
+                    <button class="btn btn-success" onclick="downloadJSON()">📦 JSON 다운로드</button>
+                    <button class="btn btn-secondary" onclick="resetFilters()">🔄 초기화</button>
                 </div>
             </div>
 
@@ -659,19 +732,18 @@
                 </thead>
                 <tbody id="tableBody">
                     <tr>
-                        <td colspan="8" class="loading">데이터 로딩 중</td>
+                        <td colspan="8" class="loading">JSON 파일을 업로드하세요</td>
                     </tr>
                 </tbody>
             </table>
 
             <div class="pagination">
                 <button id="prevBtn" onclick="changePage(-1)">이전</button>
-                <span class="page-info" id="pageInfo">1 / 1</span>
+                <span class="page-info" id="pageInfo">0 / 0</span>
                 <button id="nextBtn" onclick="changePage(1)">다음</button>
             </div>
         </div>
 
-        <!-- 탭 2: 통계 대시보드 -->
         <div id="statistics-tab" class="tab-content">
             <div class="stats-overview">
                 <div class="stat-card">
@@ -741,12 +813,11 @@
             </div>
         </div>
 
-        <!-- 탭 3: 기업 분석 -->
         <div id="companies-tab" class="tab-content">
             <div class="chart-card">
                 <h3>🏆 TOP 20 채용 기업</h3>
                 <div id="topCompaniesList" class="top-companies-list">
-                    <div class="loading">기업 데이터 분석 중...</div>
+                    <div class="loading">데이터를 불러오세요</div>
                 </div>
             </div>
 
@@ -767,7 +838,6 @@
             </div>
         </div>
 
-        <!-- 탭 4: 트렌드 분석 -->
         <div id="trends-tab" class="tab-content">
             <div class="charts-grid">
                 <div class="chart-card">
@@ -801,18 +871,17 @@
         </div>
     </div>
 
-    <!-- 상세보기 모달 -->
     <div id="detailModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>채용 상세 정보</h2>
                 <span class="close-btn" onclick="closeModal()">&times;</span>
             </div>
-            <div class="modal-body" id="modalBody">
-                <!-- 동적 컨텐츠 -->
-            </div>
+            <div class="modal-body" id="modalBody"></div>
         </div>
     </div>
+
+    <div id="alertBox" class="alert"></div>
 
     <script>
         let jobsData = [];
@@ -823,36 +892,25 @@
         let sortDirection = 'asc';
         const itemsPerPage = 50;
 
-        // CSV 데이터 로드
-        fetch('IMPROVED_JOBS_20250122_092749.csv')
-            .then(response => response.text())
-            .then(data => {
-                parseCSV(data);
-                initializeAll();
-            })
-            .catch(error => {
-                console.error('데이터 로드 실패:', error);
-                document.getElementById('tableBody').innerHTML = 
-                    '<tr><td colspan="8"><div class="error-message">❌ 데이터 로드 실패. CSV 파일을 확인하세요.<br>파일명: IMPROVED_JOBS_20250122_092749.csv</div></td></tr>';
-            });
+        function loadJSONFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-        function parseCSV(data) {
-            const lines = data.split('\n');
-            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            document.getElementById('fileName').textContent = file.name;
             
-            for (let i = 1; i < lines.length; i++) {
-                if (lines[i].trim()) {
-                    const values = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
-                    const job = {};
-                    headers.forEach((header, index) => {
-                        job[header] = values[index] ? values[index].replace(/"/g, '').trim() : '';
-                    });
-                    if (job.job_title) {
-                        jobsData.push(job);
-                    }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    jobsData = JSON.parse(e.target.result);
+                    filteredData = [...jobsData];
+                    initializeAll();
+                    showAlert(`✅ ${jobsData.length.toLocaleString()}개 데이터 로드 완료!`, 'success');
+                    document.getElementById('dataCount').textContent = `데이터: ${jobsData.length.toLocaleString()}개`;
+                } catch (error) {
+                    showAlert('❌ JSON 파일 파싱 오류: ' + error.message, 'error');
                 }
-            }
-            filteredData = [...jobsData];
+            };
+            reader.readAsText(file, 'utf-8');
         }
 
         function initializeAll() {
@@ -861,7 +919,6 @@
             calculateStats();
         }
 
-        // 탭 전환
         function showTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
@@ -882,48 +939,29 @@
             }
         }
 
-        // 필터 초기화
         function populateFilters() {
-            const industries = [...new Set(jobsData.map(j => j.industry))].filter(x => x).sort();
-            const locations = [...new Set(jobsData.map(j => j.location))].filter(x => x).sort();
-            const sizes = [...new Set(jobsData.map(j => j.company_size))].filter(x => x).sort();
-            const jobTypes = [...new Set(jobsData.map(j => j.job_type))].filter(x => x).sort();
+            const industries = [...new Set(jobsData.map(j => j.industry).filter(x => x))].sort();
+            const locations = [...new Set(jobsData.map(j => j.location).filter(x => x))].sort();
+            const sizes = [...new Set(jobsData.map(j => j.companySize).filter(x => x))].sort();
+            const jobTypes = [...new Set(jobsData.map(j => j.jobType).filter(x => x))].sort();
 
-            const industryFilter = document.getElementById('industryFilter');
-            const locationFilter = document.getElementById('locationFilter');
-            const sizeFilter = document.getElementById('sizeFilter');
-            const jobTypeFilter = document.getElementById('jobTypeFilter');
+            populateSelect('industryFilter', industries);
+            populateSelect('locationFilter', locations);
+            populateSelect('sizeFilter', sizes);
+            populateSelect('jobTypeFilter', jobTypes);
+        }
 
-            industries.forEach(ind => {
+        function populateSelect(id, options) {
+            const select = document.getElementById(id);
+            select.innerHTML = '<option value="">전체</option>';
+            options.forEach(opt => {
                 const option = document.createElement('option');
-                option.value = ind;
-                option.textContent = ind;
-                industryFilter.appendChild(option);
-            });
-
-            locations.forEach(loc => {
-                const option = document.createElement('option');
-                option.value = loc;
-                option.textContent = loc;
-                locationFilter.appendChild(option);
-            });
-
-            sizes.forEach(size => {
-                const option = document.createElement('option');
-                option.value = size;
-                option.textContent = size;
-                sizeFilter.appendChild(option);
-            });
-
-            jobTypes.forEach(type => {
-                const option = document.createElement('option');
-                option.value = type;
-                option.textContent = type;
-                jobTypeFilter.appendChild(option);
+                option.value = opt;
+                option.textContent = opt;
+                select.appendChild(option);
             });
         }
 
-        // 테이블 렌더링
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
@@ -942,20 +980,20 @@
                 const row = document.createElement('tr');
                 row.onclick = () => showDetail(job);
                 
-                const sizeClass = job.company_size.includes('Large') ? 'badge-large' :
-                                 job.company_size.includes('Mid') ? 'badge-mid' :
-                                 job.company_size.includes('Small') ? 'badge-small' :
-                                 job.company_size.includes('Foreign') ? 'badge-foreign' : '';
+                const sizeClass = job.companySize.includes('Large') ? 'badge-large' :
+                                 job.companySize.includes('Mid') ? 'badge-mid' :
+                                 job.companySize.includes('Small') ? 'badge-small' :
+                                 job.companySize.includes('Foreign') ? 'badge-foreign' : '';
 
                 row.innerHTML = `
-                    <td><a href="${job.job_url}" class="company-link" target="_blank" onclick="event.stopPropagation()">${job.company_name || '미등록'}</a></td>
-                    <td>${job.job_title.substring(0, 60)}${job.job_title.length > 60 ? '...' : ''}</td>
-                    <td><span class="badge ${sizeClass}">${job.company_size || '미등록'}</span></td>
+                    <td><a href="${job.jobUrl || '#'}" class="company-link" target="_blank" onclick="event.stopPropagation()">${job.companyName || '미등록'}</a></td>
+                    <td>${(job.jobTitle || '').substring(0, 60)}${(job.jobTitle || '').length > 60 ? '...' : ''}</td>
+                    <td><span class="badge ${sizeClass}">${job.companySize || '미등록'}</span></td>
                     <td>${job.industry || '미등록'}</td>
                     <td>${job.location || '미등록'}</td>
-                    <td>${job.job_type || '미등록'}</td>
+                    <td>${job.jobType || '미등록'}</td>
                     <td>${job.deadline || '미정'}</td>
-                    <td><button class="btn btn-primary" style="padding: 5px 10px; font-size: 12px;" onclick="event.stopPropagation(); showDetail(jobsData[${start + index}])">상세</button></td>
+                    <td><button class="btn btn-primary" style="padding: 5px 10px; font-size: 12px;" onclick="event.stopPropagation(); showDetail(filteredData[${start + index}])">상세</button></td>
                 `;
                 tbody.appendChild(row);
             });
@@ -963,27 +1001,30 @@
             updatePagination();
         }
 
-        // 상세보기 모달
         function showDetail(job) {
             const modal = document.getElementById('detailModal');
             const modalBody = document.getElementById('modalBody');
             
             modalBody.innerHTML = `
                 <div class="info-row">
+                    <div class="info-label">ID</div>
+                    <div class="info-value">${job.id || '-'}</div>
+                </div>
+                <div class="info-row">
                     <div class="info-label">기업명</div>
-                    <div class="info-value">${job.company_name || '미등록'}</div>
+                    <div class="info-value">${job.companyName || '미등록'}</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">직무</div>
-                    <div class="info-value">${job.job_title || '미등록'}</div>
+                    <div class="info-value">${job.jobTitle || '미등록'}</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">기업 규모</div>
-                    <div class="info-value">${job.company_size || '미등록'}</div>
+                    <div class="info-value">${job.companySize || '미등록'}</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">기업 유형</div>
-                    <div class="info-value">${job.company_type || '미등록'}</div>
+                    <div class="info-value">${job.companyType || '미등록'}</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">산업</div>
@@ -991,7 +1032,7 @@
                 </div>
                 <div class="info-row">
                     <div class="info-label">직원 수</div>
-                    <div class="info-value">${job.employee_count || '미등록'}</div>
+                    <div class="info-value">${job.employeeCount || '미등록'}</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">지역</div>
@@ -999,7 +1040,7 @@
                 </div>
                 <div class="info-row">
                     <div class="info-label">고용 형태</div>
-                    <div class="info-value">${job.job_type || '미등록'}</div>
+                    <div class="info-value">${job.jobType || '미등록'}</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">마감일</div>
@@ -1011,15 +1052,15 @@
                 </div>
                 <div class="info-row">
                     <div class="info-label">키워드</div>
-                    <div class="info-value">${job.keyword_matched || '-'}</div>
+                    <div class="info-value">${job.keywordMatched || '-'}</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">수집 시간</div>
-                    <div class="info-value">${job.collection_time || '-'}</div>
+                    <div class="info-value">${job.collectionTime || '-'}</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">채용 URL</div>
-                    <div class="info-value"><a href="${job.job_url}" target="_blank" class="company-link">링크 열기</a></div>
+                    <div class="info-value"><a href="${job.jobUrl || '#'}" target="_blank" class="company-link">링크 열기</a></div>
                 </div>
             `;
             
@@ -1030,7 +1071,6 @@
             document.getElementById('detailModal').classList.remove('active');
         }
 
-        // 모달 외부 클릭 시 닫기
         window.onclick = function(event) {
             const modal = document.getElementById('detailModal');
             if (event.target === modal) {
@@ -1038,7 +1078,6 @@
             }
         }
 
-        // 정렬 기능
         function sortTable(columnIndex) {
             if (sortColumn === columnIndex) {
                 sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
@@ -1047,7 +1086,7 @@
                 sortDirection = 'asc';
             }
 
-            const columns = ['company_name', 'job_title', 'company_size', 'industry', 'location', 'job_type', 'deadline'];
+            const columns = ['companyName', 'jobTitle', 'companySize', 'industry', 'location', 'jobType', 'deadline'];
             const column = columns[columnIndex];
 
             filteredData.sort((a, b) => {
@@ -1061,7 +1100,6 @@
                 }
             });
 
-            // 정렬 표시 업데이트
             document.querySelectorAll('th').forEach((th, index) => {
                 th.classList.remove('sort-asc', 'sort-desc');
                 if (index === columnIndex) {
@@ -1073,10 +1111,9 @@
             renderTable();
         }
 
-        // 페이지네이션
         function updatePagination() {
             const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-            document.getElementById('pageInfo').textContent = `${currentPage} / ${totalPages}`;
+            document.getElementById('pageInfo').textContent = `${currentPage} / ${totalPages || 1}`;
             document.getElementById('prevBtn').disabled = currentPage === 1;
             document.getElementById('nextBtn').disabled = currentPage === totalPages || totalPages === 0;
         }
@@ -1092,7 +1129,6 @@
             }
         }
 
-        // 필터링
         function filterTable() {
             const searchText = document.getElementById('searchInput').value.toLowerCase();
             const industryFilter = document.getElementById('industryFilter').value;
@@ -1102,15 +1138,15 @@
 
             filteredData = jobsData.filter(job => {
                 const matchSearch = !searchText || 
-                    job.company_name.toLowerCase().includes(searchText) ||
-                    job.job_title.toLowerCase().includes(searchText) ||
-                    job.location.toLowerCase().includes(searchText) ||
-                    job.industry.toLowerCase().includes(searchText);
+                    (job.companyName || '').toLowerCase().includes(searchText) ||
+                    (job.jobTitle || '').toLowerCase().includes(searchText) ||
+                    (job.location || '').toLowerCase().includes(searchText) ||
+                    (job.industry || '').toLowerCase().includes(searchText);
                 
                 const matchIndustry = !industryFilter || job.industry === industryFilter;
                 const matchLocation = !locationFilter || job.location === locationFilter;
-                const matchSize = !sizeFilter || job.company_size === sizeFilter;
-                const matchJobType = !jobTypeFilter || job.job_type === jobTypeFilter;
+                const matchSize = !sizeFilter || job.companySize === sizeFilter;
+                const matchJobType = !jobTypeFilter || job.jobType === jobTypeFilter;
 
                 return matchSearch && matchIndustry && matchLocation && matchSize && matchJobType;
             });
@@ -1119,7 +1155,6 @@
             renderTable();
         }
 
-        // 필터 초기화
         function resetFilters() {
             document.getElementById('searchInput').value = '';
             document.getElementById('industryFilter').value = '';
@@ -1129,41 +1164,53 @@
             filterTable();
         }
 
-        // CSV 다운로드
         function downloadCSV() {
-            const headers = ['기업명', '직무', '규모', '산업', '지역', '고용형태', '마감일', '급여', 'URL'];
+            const headers = ['ID', '기업명', '직무', '규모', '유형', '산업', '직원수', '지역', '고용형태', '마감일', '급여', 'URL', '키워드', '수집시간'];
             const csvContent = [
                 headers.join(','),
                 ...filteredData.map(job => [
-                    job.company_name,
-                    job.job_title,
-                    job.company_size,
+                    job.id,
+                    job.companyName,
+                    job.jobTitle,
+                    job.companySize,
+                    job.companyType,
                     job.industry,
+                    job.employeeCount,
                     job.location,
-                    job.job_type,
+                    job.jobType,
                     job.deadline,
                     job.salary,
-                    job.job_url
-                ].map(field => `"${field}"`).join(','))
+                    job.jobUrl,
+                    job.keywordMatched,
+                    job.collectionTime
+                ].map(field => `"${field || ''}"`).join(','))
             ].join('\n');
 
             const BOM = '\uFEFF';
             const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            
-            link.setAttribute('href', url);
-            link.setAttribute('download', `unijob_filtered_${new Date().getTime()}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            downloadBlob(blob, `unijob_filtered_${Date.now()}.csv`);
+            showAlert('✅ CSV 파일 다운로드 완료!', 'success');
         }
 
-        // 통계 계산
+        function downloadJSON() {
+            const jsonString = JSON.stringify(filteredData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            downloadBlob(blob, `unijob_filtered_${Date.now()}.json`);
+            showAlert('✅ JSON 파일 다운로드 완료!', 'success');
+        }
+
+        function downloadBlob(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
         function calculateStats() {
             const totalJobs = jobsData.length;
-            const uniqueCompanies = [...new Set(jobsData.map(j => j.company_name).filter(x => x && x !== 'Company TBD'))].length;
+            const uniqueCompanies = [...new Set(jobsData.map(j => j.companyName).filter(x => x))].length;
             const uniqueLocations = [...new Set(jobsData.map(j => j.location).filter(x => x))].length;
             
             const industryCounts = {};
@@ -1182,7 +1229,6 @@
             document.getElementById('totalLocations').textContent = uniqueLocations;
         }
 
-        // 통계 차트 생성
         function createStatisticsCharts() {
             createIndustryChart();
             createSizeChart();
@@ -1216,9 +1262,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'right' }
-                    }
+                    plugins: { legend: { position: 'right' } }
                 }
             });
         }
@@ -1226,8 +1270,8 @@
         function createSizeChart() {
             const sizeCounts = {};
             jobsData.forEach(job => {
-                if (job.company_size) {
-                    sizeCounts[job.company_size] = (sizeCounts[job.company_size] || 0) + 1;
+                if (job.companySize) {
+                    sizeCounts[job.companySize] = (sizeCounts[job.companySize] || 0) + 1;
                 }
             });
 
@@ -1244,9 +1288,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'right' }
-                    }
+                    plugins: { legend: { position: 'right' } }
                 }
             });
         }
@@ -1277,12 +1319,8 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
                 }
             });
         }
@@ -1290,8 +1328,8 @@
         function createJobTypeChart() {
             const typeCounts = {};
             jobsData.forEach(job => {
-                if (job.job_type) {
-                    typeCounts[job.job_type] = (typeCounts[job.job_type] || 0) + 1;
+                if (job.jobType) {
+                    typeCounts[job.jobType] = (typeCounts[job.jobType] || 0) + 1;
                 }
             });
 
@@ -1308,9 +1346,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'right' }
-                    }
+                    plugins: { legend: { position: 'right' } }
                 }
             });
         }
@@ -1318,8 +1354,8 @@
         function createMonthlyChart() {
             const monthlyCounts = {};
             jobsData.forEach(job => {
-                if (job.collection_time) {
-                    const date = new Date(job.collection_time);
+                if (job.collectionTime) {
+                    const date = new Date(job.collectionTime);
                     const month = date.getMonth() + 1;
                     monthlyCounts[month] = (monthlyCounts[month] || 0) + 1;
                 }
@@ -1345,12 +1381,8 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
                 }
             });
         }
@@ -1358,8 +1390,8 @@
         function createKeywordChart() {
             const keywordCounts = {};
             jobsData.forEach(job => {
-                if (job.keyword_matched) {
-                    keywordCounts[job.keyword_matched] = (keywordCounts[job.keyword_matched] || 0) + 1;
+                if (job.keywordMatched) {
+                    keywordCounts[job.keywordMatched] = (keywordCounts[job.keywordMatched] || 0) + 1;
                 }
             });
 
@@ -1382,22 +1414,17 @@
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        x: { beginAtZero: true }
-                    }
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true } }
                 }
             });
         }
 
-        // 기업 분석 차트
         function createCompanyCharts() {
             const companyCounts = {};
             jobsData.forEach(job => {
-                if (job.company_name && job.company_name !== 'Company TBD') {
-                    companyCounts[job.company_name] = (companyCounts[job.company_name] || 0) + 1;
+                if (job.companyName) {
+                    companyCounts[job.companyName] = (companyCounts[job.companyName] || 0) + 1;
                 }
             });
 
@@ -1405,7 +1432,6 @@
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 20);
 
-            // TOP 20 기업 리스트
             const listContainer = document.getElementById('topCompaniesList');
             listContainer.innerHTML = '';
             
@@ -1422,7 +1448,6 @@
                 listContainer.appendChild(item);
             });
 
-            // 기업별 차트
             const ctx = document.getElementById('companyChart');
             charts.company = new Chart(ctx, {
                 type: 'bar',
@@ -1438,30 +1463,25 @@
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        x: { beginAtZero: true }
-                    }
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true } }
                 }
             });
 
-            // 교차 분석
             createCrossAnalysisChart();
         }
 
         function createCrossAnalysisChart() {
             const crossData = {};
             jobsData.forEach(job => {
-                if (job.industry && job.company_size) {
-                    const key = `${job.industry}_${job.company_size}`;
+                if (job.industry && job.companySize) {
+                    const key = `${job.industry}_${job.companySize}`;
                     crossData[key] = (crossData[key] || 0) + 1;
                 }
             });
 
             const industries = [...new Set(jobsData.map(j => j.industry).filter(x => x))].slice(0, 6);
-            const sizes = [...new Set(jobsData.map(j => j.company_size).filter(x => x))].slice(0, 4);
+            const sizes = [...new Set(jobsData.map(j => j.companySize).filter(x => x))].slice(0, 4);
 
             const datasets = sizes.map((size, index) => ({
                 label: size,
@@ -1479,17 +1499,12 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'top' }
-                    },
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
+                    plugins: { legend: { position: 'top' } },
+                    scales: { y: { beginAtZero: true } }
                 }
             });
         }
 
-        // 트렌드 차트
         function createTrendCharts() {
             createCollectionChart();
             createDeadlineChart();
@@ -1500,8 +1515,8 @@
         function createCollectionChart() {
             const collectionDates = {};
             jobsData.forEach(job => {
-                if (job.collection_time) {
-                    const date = job.collection_time.split(' ')[0];
+                if (job.collectionTime) {
+                    const date = job.collectionTime.split(' ')[0];
                     collectionDates[date] = (collectionDates[date] || 0) + 1;
                 }
             });
@@ -1525,12 +1540,8 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
                 }
             });
         }
@@ -1545,7 +1556,7 @@
             };
 
             jobsData.forEach(job => {
-                if (!job.deadline || job.deadline.includes('Deadline TBD')) {
+                if (!job.deadline || job.deadline.includes('TBD')) {
                     deadlineCounts['미정']++;
                 } else if (job.deadline.includes('D-')) {
                     const match = job.deadline.match(/D-(\d+)/);
@@ -1574,9 +1585,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'right' }
-                    }
+                    plugins: { legend: { position: 'right' } }
                 }
             });
         }
@@ -1584,10 +1593,10 @@
         function createQualityChart() {
             const total = jobsData.length;
             const quality = {
-                '회사명': jobsData.filter(j => j.company_name && j.company_name !== 'Company TBD').length / total * 100,
+                '회사명': jobsData.filter(j => j.companyName && j.companyName !== 'Company TBD').length / total * 100,
                 '연봉정보': jobsData.filter(j => j.salary && j.salary !== 'Salary TBD').length / total * 100,
                 '마감일': jobsData.filter(j => j.deadline && j.deadline !== 'Deadline TBD').length / total * 100,
-                '직원수': jobsData.filter(j => j.employee_count && j.employee_count !== 'Unknown').length / total * 100
+                '직원수': jobsData.filter(j => j.employeeCount && j.employeeCount !== 'Unknown').length / total * 100
             };
 
             const ctx = document.getElementById('qualityChart');
@@ -1600,10 +1609,7 @@
                         data: Object.values(quality),
                         backgroundColor: 'rgba(74, 144, 226, 0.2)',
                         borderColor: '#4A90E2',
-                        pointBackgroundColor: '#4A90E2',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: '#4A90E2'
+                        pointBackgroundColor: '#4A90E2'
                     }]
                 },
                 options: {
@@ -1613,9 +1619,7 @@
                         r: {
                             beginAtZero: true,
                             max: 100,
-                            ticks: {
-                                stepSize: 20
-                            }
+                            ticks: { stepSize: 20 }
                         }
                     }
                 }
@@ -1625,8 +1629,8 @@
         function createEmployeeChart() {
             const employeeCounts = {};
             jobsData.forEach(job => {
-                if (job.employee_count && job.employee_count !== 'Unknown') {
-                    employeeCounts[job.employee_count] = (employeeCounts[job.employee_count] || 0) + 1;
+                if (job.employeeCount && job.employeeCount !== 'Unknown') {
+                    employeeCounts[job.employeeCount] = (employeeCounts[job.employeeCount] || 0) + 1;
                 }
             });
 
@@ -1648,14 +1652,20 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
                 }
             });
+        }
+
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.className = `alert alert-${type} show`;
+            alertBox.textContent = message;
+            
+            setTimeout(() => {
+                alertBox.classList.remove('show');
+            }, 3000);
         }
     </script>
 </body>
