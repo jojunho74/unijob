@@ -1502,4 +1502,91 @@
         }
     </script>
 </body>
+<!-- 조회수 카운터 (</body> 바로 위에 추가) -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // URL에서 공고 ID 추출
+    const urlParams = new URLSearchParams(window.location.search);
+    const jobId = urlParams.get('id') || 'unknown';
+    
+    // 현재 시간
+    const now = new Date().toISOString();
+    
+    // 조회 기록 저장
+    const viewLog = {
+        jobId: jobId,
+        timestamp: now,
+        url: window.location.href
+    };
+    
+    // 기존 조회 기록 가져오기
+    let allViews = JSON.parse(localStorage.getItem('allJobViews') || '[]');
+    allViews.push(viewLog);
+    
+    // 최근 1000개만 유지
+    if (allViews.length > 1000) {
+        allViews = allViews.slice(-1000);
+    }
+    
+    localStorage.setItem('allJobViews', JSON.stringify(allViews));
+    
+    // 공고별 조회수 카운트
+    const storageKey = `job_view_count_${jobId}`;
+    let viewCount = parseInt(localStorage.getItem(storageKey) || '0');
+    viewCount++;
+    localStorage.setItem(storageKey, viewCount);
+    
+    // 전체 조회수도 기록
+    let totalViews = parseInt(localStorage.getItem('total_views') || '0');
+    totalViews++;
+    localStorage.setItem('total_views', totalViews);
+    
+    console.log(`공고 ID: ${jobId}, 조회수: ${viewCount}회`);
+    
+    // 관리자 단축키: Ctrl + Shift + V
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.shiftKey && e.key === 'V') {
+            showAdminStats();
+        }
+    });
+});
+
+// 관리자 통계 표시 함수
+function showAdminStats() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const jobId = urlParams.get('id') || 'unknown';
+    const currentCount = localStorage.getItem(`job_view_count_${jobId}`) || '0';
+    const totalViews = localStorage.getItem('total_views') || '0';
+    
+    // 모든 공고의 조회수 통계
+    let allStats = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('job_view_count_')) {
+            const id = key.replace('job_view_count_', '');
+            allStats[id] = localStorage.getItem(key);
+        }
+    }
+    
+    let statsText = `📊 조회 통계\n\n`;
+    statsText += `현재 공고 조회수: ${currentCount}회\n`;
+    statsText += `전체 조회수: ${totalViews}회\n\n`;
+    statsText += `--- 공고별 조회수 ---\n`;
+    
+    // 조회수가 많은 순으로 정렬
+    const sortedStats = Object.entries(allStats)
+        .sort((a, b) => parseInt(b[1]) - parseInt(a[1]))
+        .slice(0, 10); // 상위 10개만
+    
+    sortedStats.forEach(([id, count], index) => {
+        statsText += `${index + 1}. 공고 ${id}: ${count}회\n`;
+    });
+    
+    statsText += `\n💡 관리자 페이지로 이동하시겠습니까?`;
+    
+    if (confirm(statsText)) {
+        window.open('admin_stats.html', '_blank');
+    }
+}
+</script>
 </html>
