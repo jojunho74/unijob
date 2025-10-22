@@ -1502,24 +1502,45 @@
         }
     </script>
 </body>
-<!-- 조회수 카운터 (</body> 바로 위에 추가) -->
+<!-- 조회수 카운터 (기존 스크립트 전체를 이것으로 교체) -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // URL에서 공고 ID 추출
     const urlParams = new URLSearchParams(window.location.search);
     const jobId = urlParams.get('id') || 'unknown';
     
-    // 현재 시간
-    const now = new Date().toISOString();
+    // 현재 날짜와 시간
+    const now = new Date();
+    const today = now.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+    const timestamp = now.toISOString();
     
-    // 조회 기록 저장
+    // === 1. 일자별 조회수 기록 ===
+    const dailyKey = `daily_views_${today}`;
+    let dailyViews = JSON.parse(localStorage.getItem(dailyKey) || '{}');
+    
+    if (!dailyViews[jobId]) {
+        dailyViews[jobId] = 0;
+    }
+    dailyViews[jobId]++;
+    
+    localStorage.setItem(dailyKey, JSON.stringify(dailyViews));
+    
+    // === 2. 전체 일자 목록 관리 ===
+    let allDates = JSON.parse(localStorage.getItem('tracked_dates') || '[]');
+    if (!allDates.includes(today)) {
+        allDates.push(today);
+        allDates.sort(); // 날짜 순으로 정렬
+        localStorage.setItem('tracked_dates', JSON.stringify(allDates));
+    }
+    
+    // === 3. 상세 조회 로그 (시간까지 기록) ===
     const viewLog = {
         jobId: jobId,
-        timestamp: now,
+        date: today,
+        timestamp: timestamp,
         url: window.location.href
     };
     
-    // 기존 조회 기록 가져오기
     let allViews = JSON.parse(localStorage.getItem('allJobViews') || '[]');
     allViews.push(viewLog);
     
@@ -1527,21 +1548,26 @@ document.addEventListener('DOMContentLoaded', function() {
     if (allViews.length > 1000) {
         allViews = allViews.slice(-1000);
     }
-    
     localStorage.setItem('allJobViews', JSON.stringify(allViews));
     
-    // 공고별 조회수 카운트
+    // === 4. 공고별 누적 조회수 ===
     const storageKey = `job_view_count_${jobId}`;
     let viewCount = parseInt(localStorage.getItem(storageKey) || '0');
     viewCount++;
     localStorage.setItem(storageKey, viewCount);
     
-    // 전체 조회수도 기록
+    // === 5. 전체 누적 조회수 ===
     let totalViews = parseInt(localStorage.getItem('total_views') || '0');
     totalViews++;
     localStorage.setItem('total_views', totalViews);
     
-    console.log(`공고 ID: ${jobId}, 조회수: ${viewCount}회`);
+    // === 6. 오늘 전체 조회수 ===
+    const todayTotalKey = `daily_total_${today}`;
+    let todayTotal = parseInt(localStorage.getItem(todayTotalKey) || '0');
+    todayTotal++;
+    localStorage.setItem(todayTotalKey, todayTotal);
+    
+    console.log(`📊 조회 기록: ${jobId} | 오늘 ${dailyViews[jobId]}회 | 누적 ${viewCount}회`);
     
     // 관리자 단축키: Ctrl + Shift + V
     document.addEventListener('keydown', function(e) {
@@ -1555,34 +1581,29 @@ document.addEventListener('DOMContentLoaded', function() {
 function showAdminStats() {
     const urlParams = new URLSearchParams(window.location.search);
     const jobId = urlParams.get('id') || 'unknown';
-    const currentCount = localStorage.getItem(`job_view_count_${jobId}`) || '0';
-    const totalViews = localStorage.getItem('total_views') || '0';
+    const today = new Date().toISOString().split('T')[0];
     
-    // 모든 공고의 조회수 통계
-    let allStats = {};
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key.startsWith('job_view_count_')) {
-            const id = key.replace('job_view_count_', '');
-            allStats[id] = localStorage.getItem(key);
-        }
-    }
+    // 오늘 이 공고 조회수
+    const dailyViews = JSON.parse(localStorage.getItem(`daily_views_${today}`) || '{}');
+    const todayCount = dailyViews[jobId] || 0;
     
-    let statsText = `📊 조회 통계\n\n`;
-    statsText += `현재 공고 조회수: ${currentCount}회\n`;
-    statsText += `전체 조회수: ${totalViews}회\n\n`;
-    statsText += `--- 공고별 조회수 ---\n`;
+    // 누적 조회수
+    const totalCount = localStorage.getItem(`job_view_count_${jobId}`) || '0';
     
-    // 조회수가 많은 순으로 정렬
-    const sortedStats = Object.entries(allStats)
-        .sort((a, b) => parseInt(b[1]) - parseInt(a[1]))
-        .slice(0, 10); // 상위 10개만
+    // 오늘 전체 조회수
+    const todayTotal = localStorage.getItem(`daily_total_${today}`) || '0';
     
-    sortedStats.forEach(([id, count], index) => {
-        statsText += `${index + 1}. 공고 ${id}: ${count}회\n`;
-    });
+    // 전체 누적 조회수
+    const grandTotal = localStorage.getItem('total_views') || '0';
     
-    statsText += `\n💡 관리자 페이지로 이동하시겠습니까?`;
+    let statsText = `📊 조회 통계 (${today})\n\n`;
+    statsText += `🔹 현재 공고 (ID: ${jobId})\n`;
+    statsText += `   오늘: ${todayCount}회\n`;
+    statsText += `   누적: ${totalCount}회\n\n`;
+    statsText += `🔹 전체 통계\n`;
+    statsText += `   오늘 전체: ${todayTotal}회\n`;
+    statsText += `   누적 전체: ${grandTotal}회\n\n`;
+    statsText += `💡 상세 통계 페이지로 이동하시겠습니까?`;
     
     if (confirm(statsText)) {
         window.open('admin_stats.html', '_blank');
