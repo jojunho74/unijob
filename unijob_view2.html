@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniJob 채용 데이터 분석 플랫폼 - Ultimate Edition</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        /* 헤더 */
+        .header {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        /* 상단 네비게이션 메뉴 */
+        .nav-menu {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-item {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            font-size: 16px;
+            color: #555;
+        }
+
+        .nav-item:hover {
+            background: #e9ecef;
+            color: #4A90E2;
+        }
+
+        .nav-item.active {
+            background: white;
+            color: #4A90E2;
+            border-bottom-color: #4A90E2;
+        }
+
+        /* 탭 컨텐츠 */
+        .tab-content {
+            display: none;
+            padding: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 통계 카드 */
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* 차트 그리드 */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .chart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .chart-card h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+        }
+
+        /* 원본 테이블 스타일 보존 */
+        .controls {
+            margin-bottom: 25px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #4A90E2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        select {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        select:hover {
+            border-color: #4A90E2;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #4A90E2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #357ABD;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        thead {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            color: white;
+        }
+
+        th {
+            padding: 18px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+
+        th:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        th.sortable::after {
+            content: '⇅';
+            position: absolute;
+            right: 8px;
+            opacity: 0.5;
+        }
+
+        th.sort-asc::after {
+            content: '↑';
+            opacity: 1;
+        }
+
+        th.sort-desc::after {
+            content: '↓';
+            opacity: 1;
+        }
+
+        td {
+            padding: 15px 18px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #333;
+        }
+
+        tbody tr {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        tbody tr:hover {
+            background: #e3f2fd;
+            transform: scale(1.01);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-large { background: #e3f2fd; color: #1976d2; }
+        .badge-mid { background: #f3e5f5; color: #7b1fa2; }
+        .badge-small { background: #fff3e0; color: #e65100; }
+        .badge-foreign { background: #e8f5e9; color: #2e7d32; }
+
+        .company-link {
+            color: #4A90E2;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .company-link:hover {
+            color: #357ABD;
+            text-decoration: underline;
+        }
+
+        /* 모달 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .modal-header h2 {
+            color: #333;
+            font-size: 24px;
+        }
+
+        .close-btn {
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            line-height: 1.8;
+        }
+
+        .modal-body .info-row {
+            display: flex;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .modal-body .info-label {
+            font-weight: 600;
+            color: #4A90E2;
+            min-width: 120px;
+        }
+
+        .modal-body .info-value {
+            color: #333;
+            flex: 1;
+        }
+
+        /* TOP 기업 리스트 */
+        .top-companies-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .company-item {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .company-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+
+        .company-rank {
+            font-size: 28px;
+            font-weight: bold;
+            color: #4A90E2;
+            min-width: 50px;
+        }
+
+        .company-info {
+            flex: 1;
+        }
+
+        .company-name {
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .company-count {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* 페이지네이션 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+            padding: 20px;
+        }
+
+        .pagination button {
+            padding: 10px 20px;
+            border: 2px solid #4A90E2;
+            background: white;
+            color: #4A90E2;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #4A90E2;
+            color: white;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .pagination .page-info {
+            color: #666;
+            font-weight: 600;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-item {
+                padding: 15px 10px;
+                font-size: 14px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .stats-overview {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .filter-group {
+                width: 100%;
+            }
+
+            select {
+                flex: 1;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .action-buttons {
+                width: 100%;
+            }
+
+            .btn {
+                flex: 1;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 10px;
+            }
+        }
+
+        /* 로딩 */
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        .error-message {
+            background: #fee;
+            border: 2px solid #fcc;
+            color: #c00;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header">
+            <h1>📊 UniJob 채용 데이터 분석 플랫폼</h1>
+            <p>실시간 채용 트렌드 분석 및 통계 대시보드</p>
+        </div>
+
+        <!-- 네비게이션 메뉴 -->
+        <div class="nav-menu">
+            <div class="nav-item active" onclick="showTab('data')">
+                📋 데이터
+            </div>
+            <div class="nav-item" onclick="showTab('statistics')">
+                📊 통계 대시보드
+            </div>
+            <div class="nav-item" onclick="showTab('companies')">
+                🏢 기업 분석
+            </div>
+            <div class="nav-item" onclick="showTab('trends')">
+                📈 트렌드 분석
+            </div>
+        </div>
+
+        <!-- 탭 1: 데이터 테이블 (원본 기능 전체 보존) -->
+        <div id="data-tab" class="tab-content active">
+            <div class="controls">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 기업명, 직무, 지역, 산업 검색..." onkeyup="filterTable()">
+                </div>
+                <div class="filter-group">
+                    <select id="industryFilter" onchange="filterTable()">
+                        <option value="">전체 산업</option>
+                    </select>
+                    <select id="locationFilter" onchange="filterTable()">
+                        <option value="">전체 지역</option>
+                    </select>
+                    <select id="sizeFilter" onchange="filterTable()">
+                        <option value="">전체 규모</option>
+                    </select>
+                    <select id="jobTypeFilter" onchange="filterTable()">
+                        <option value="">전체 고용형태</option>
+                    </select>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="downloadCSV()">📥 CSV 다운로드</button>
+                    <button class="btn btn-secondary" onclick="resetFilters()">🔄 필터 초기화</button>
+                </div>
+            </div>
+
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th class="sortable" onclick="sortTable(0)">기업명</th>
+                        <th class="sortable" onclick="sortTable(1)">직무</th>
+                        <th class="sortable" onclick="sortTable(2)">규모</th>
+                        <th class="sortable" onclick="sortTable(3)">산업</th>
+                        <th class="sortable" onclick="sortTable(4)">지역</th>
+                        <th class="sortable" onclick="sortTable(5)">고용형태</th>
+                        <th class="sortable" onclick="sortTable(6)">마감일</th>
+                        <th>상세</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="8" class="loading">데이터 로딩 중</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="pagination">
+                <button id="prevBtn" onclick="changePage(-1)">이전</button>
+                <span class="page-info" id="pageInfo">1 / 1</span>
+                <button id="nextBtn" onclick="changePage(1)">다음</button>
+            </div>
+        </div>
+
+        <!-- 탭 2: 통계 대시보드 -->
+        <div id="statistics-tab" class="tab-content">
+            <div class="stats-overview">
+                <div class="stat-card">
+                    <h3>총 채용공고</h3>
+                    <div class="value" id="totalJobs">0</div>
+                    <div class="label">건</div>
+                </div>
+                <div class="stat-card">
+                    <h3>참여 기업</h3>
+                    <div class="value" id="totalCompanies">0</div>
+                    <div class="label">개사</div>
+                </div>
+                <div class="stat-card">
+                    <h3>주요 산업</h3>
+                    <div class="value" id="topIndustry">-</div>
+                    <div class="label">분야</div>
+                </div>
+                <div class="stat-card">
+                    <h3>채용 지역</h3>
+                    <div class="value" id="totalLocations">0</div>
+                    <div class="label">개 지역</div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3>📊 산업별 채용 분포</h3>
+                    <div class="chart-container">
+                        <canvas id="industryChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3>🏢 기업 규모별 분포</h3>
+                    <div class="chart-container">
+                        <canvas id="sizeChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3>🗺️ 지역별 채용 현황</h3>
+                    <div class="chart-container">
+                        <canvas id="locationChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3>💼 고용 형태 분포</h3>
+                    <div class="chart-container">
+                        <canvas id="jobTypeChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3>📅 월별 채용 추이</h3>
+                    <div class="chart-container">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3>🔍 인기 키워드 TOP 10</h3>
+                    <div class="chart-container">
+                        <canvas id="keywordChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 탭 3: 기업 분석 -->
+        <div id="companies-tab" class="tab-content">
+            <div class="chart-card">
+                <h3>🏆 TOP 20 채용 기업</h3>
+                <div id="topCompaniesList" class="top-companies-list">
+                    <div class="loading">기업 데이터 분석 중...</div>
+                </div>
+            </div>
+
+            <div class="charts-grid" style="margin-top: 30px;">
+                <div class="chart-card">
+                    <h3>📊 기업별 채용 공고 수</h3>
+                    <div class="chart-container">
+                        <canvas id="companyChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3>🔄 산업 × 기업규모 분포</h3>
+                    <div class="chart-container">
+                        <canvas id="crossChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 탭 4: 트렌드 분석 -->
+        <div id="trends-tab" class="tab-content">
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3>📅 수집 시기별 채용 추이</h3>
+                    <div class="chart-container">
+                        <canvas id="collectionChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3>⏰ 마감 기한 분포</h3>
+                    <div class="chart-container">
+                        <canvas id="deadlineChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3>📈 데이터 품질 점수</h3>
+                    <div class="chart-container">
+                        <canvas id="qualityChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3>👥 직원 규모 분포</h3>
+                    <div class="chart-container">
+                        <canvas id="employeeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 상세보기 모달 -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>채용 상세 정보</h2>
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- 동적 컨텐츠 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let jobsData = [];
+        let filteredData = [];
+        let charts = {};
+        let currentPage = 1;
+        let sortColumn = -1;
+        let sortDirection = 'asc';
+        const itemsPerPage = 50;
+
+        // CSV 데이터 로드
+        fetch('IMPROVED_JOBS_20250122_092749.csv')
+            .then(response => response.text())
+            .then(data => {
+                parseCSV(data);
+                initializeAll();
+            })
+            .catch(error => {
+                console.error('데이터 로드 실패:', error);
+                document.getElementById('tableBody').innerHTML = 
+                    '<tr><td colspan="8"><div class="error-message">❌ 데이터 로드 실패. CSV 파일을 확인하세요.<br>파일명: IMPROVED_JOBS_20250122_092749.csv</div></td></tr>';
+            });
+
+        function parseCSV(data) {
+            const lines = data.split('\n');
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim()) {
+                    const values = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
+                    const job = {};
+                    headers.forEach((header, index) => {
+                        job[header] = values[index] ? values[index].replace(/"/g, '').trim() : '';
+                    });
+                    if (job.job_title) {
+                        jobsData.push(job);
+                    }
+                }
+            }
+            filteredData = [...jobsData];
+        }
+
+        function initializeAll() {
+            populateFilters();
+            renderTable();
+            calculateStats();
+        }
+
+        // 탭 전환
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'statistics' && !charts.industry) {
+                createStatisticsCharts();
+            } else if (tabName === 'companies' && !charts.company) {
+                createCompanyCharts();
+            } else if (tabName === 'trends' && !charts.collection) {
+                createTrendCharts();
+            }
+        }
+
+        // 필터 초기화
+        function populateFilters() {
+            const industries = [...new Set(jobsData.map(j => j.industry))].filter(x => x).sort();
+            const locations = [...new Set(jobsData.map(j => j.location))].filter(x => x).sort();
+            const sizes = [...new Set(jobsData.map(j => j.company_size))].filter(x => x).sort();
+            const jobTypes = [...new Set(jobsData.map(j => j.job_type))].filter(x => x).sort();
+
+            const industryFilter = document.getElementById('industryFilter');
+            const locationFilter = document.getElementById('locationFilter');
+            const sizeFilter = document.getElementById('sizeFilter');
+            const jobTypeFilter = document.getElementById('jobTypeFilter');
+
+            industries.forEach(ind => {
+                const option = document.createElement('option');
+                option.value = ind;
+                option.textContent = ind;
+                industryFilter.appendChild(option);
+            });
+
+            locations.forEach(loc => {
+                const option = document.createElement('option');
+                option.value = loc;
+                option.textContent = loc;
+                locationFilter.appendChild(option);
+            });
+
+            sizes.forEach(size => {
+                const option = document.createElement('option');
+                option.value = size;
+                option.textContent = size;
+                sizeFilter.appendChild(option);
+            });
+
+            jobTypes.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                jobTypeFilter.appendChild(option);
+            });
+        }
+
+        // 테이블 렌더링
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageData = filteredData.slice(start, end);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:50px;color:#999;">검색 결과가 없습니다.</td></tr>';
+                updatePagination();
+                return;
+            }
+
+            pageData.forEach((job, index) => {
+                const row = document.createElement('tr');
+                row.onclick = () => showDetail(job);
+                
+                const sizeClass = job.company_size.includes('Large') ? 'badge-large' :
+                                 job.company_size.includes('Mid') ? 'badge-mid' :
+                                 job.company_size.includes('Small') ? 'badge-small' :
+                                 job.company_size.includes('Foreign') ? 'badge-foreign' : '';
+
+                row.innerHTML = `
+                    <td><a href="${job.job_url}" class="company-link" target="_blank" onclick="event.stopPropagation()">${job.company_name || '미등록'}</a></td>
+                    <td>${job.job_title.substring(0, 60)}${job.job_title.length > 60 ? '...' : ''}</td>
+                    <td><span class="badge ${sizeClass}">${job.company_size || '미등록'}</span></td>
+                    <td>${job.industry || '미등록'}</td>
+                    <td>${job.location || '미등록'}</td>
+                    <td>${job.job_type || '미등록'}</td>
+                    <td>${job.deadline || '미정'}</td>
+                    <td><button class="btn btn-primary" style="padding: 5px 10px; font-size: 12px;" onclick="event.stopPropagation(); showDetail(jobsData[${start + index}])">상세</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            updatePagination();
+        }
+
+        // 상세보기 모달
+        function showDetail(job) {
+            const modal = document.getElementById('detailModal');
+            const modalBody = document.getElementById('modalBody');
+            
+            modalBody.innerHTML = `
+                <div class="info-row">
+                    <div class="info-label">기업명</div>
+                    <div class="info-value">${job.company_name || '미등록'}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">직무</div>
+                    <div class="info-value">${job.job_title || '미등록'}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">기업 규모</div>
+                    <div class="info-value">${job.company_size || '미등록'}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">기업 유형</div>
+                    <div class="info-value">${job.company_type || '미등록'}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">산업</div>
+                    <div class="info-value">${job.industry || '미등록'}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">직원 수</div>
+                    <div class="info-value">${job.employee_count || '미등록'}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">지역</div>
+                    <div class="info-value">${job.location || '미등록'}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">고용 형태</div>
+                    <div class="info-value">${job.job_type || '미등록'}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">마감일</div>
+                    <div class="info-value">${job.deadline || '미정'}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">급여</div>
+                    <div class="info-value">${job.salary || '협의'}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">키워드</div>
+                    <div class="info-value">${job.keyword_matched || '-'}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">수집 시간</div>
+                    <div class="info-value">${job.collection_time || '-'}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">채용 URL</div>
+                    <div class="info-value"><a href="${job.job_url}" target="_blank" class="company-link">링크 열기</a></div>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+
+        // 모달 외부 클릭 시 닫기
+        window.onclick = function(event) {
+            const modal = document.getElementById('detailModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // 정렬 기능
+        function sortTable(columnIndex) {
+            if (sortColumn === columnIndex) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = columnIndex;
+                sortDirection = 'asc';
+            }
+
+            const columns = ['company_name', 'job_title', 'company_size', 'industry', 'location', 'job_type', 'deadline'];
+            const column = columns[columnIndex];
+
+            filteredData.sort((a, b) => {
+                let valA = a[column] || '';
+                let valB = b[column] || '';
+                
+                if (sortDirection === 'asc') {
+                    return valA.localeCompare(valB);
+                } else {
+                    return valB.localeCompare(valA);
+                }
+            });
+
+            // 정렬 표시 업데이트
+            document.querySelectorAll('th').forEach((th, index) => {
+                th.classList.remove('sort-asc', 'sort-desc');
+                if (index === columnIndex) {
+                    th.classList.add(sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+                }
+            });
+
+            currentPage = 1;
+            renderTable();
+        }
+
+        // 페이지네이션
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            document.getElementById('pageInfo').textContent = `${currentPage} / ${totalPages}`;
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages || totalPages === 0;
+        }
+
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            const newPage = currentPage + direction;
+            
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                renderTable();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // 필터링
+        function filterTable() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const industryFilter = document.getElementById('industryFilter').value;
+            const locationFilter = document.getElementById('locationFilter').value;
+            const sizeFilter = document.getElementById('sizeFilter').value;
+            const jobTypeFilter = document.getElementById('jobTypeFilter').value;
+
+            filteredData = jobsData.filter(job => {
+                const matchSearch = !searchText || 
+                    job.company_name.toLowerCase().includes(searchText) ||
+                    job.job_title.toLowerCase().includes(searchText) ||
+                    job.location.toLowerCase().includes(searchText) ||
+                    job.industry.toLowerCase().includes(searchText);
+                
+                const matchIndustry = !industryFilter || job.industry === industryFilter;
+                const matchLocation = !locationFilter || job.location === locationFilter;
+                const matchSize = !sizeFilter || job.company_size === sizeFilter;
+                const matchJobType = !jobTypeFilter || job.job_type === jobTypeFilter;
+
+                return matchSearch && matchIndustry && matchLocation && matchSize && matchJobType;
+            });
+
+            currentPage = 1;
+            renderTable();
+        }
+
+        // 필터 초기화
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('industryFilter').value = '';
+            document.getElementById('locationFilter').value = '';
+            document.getElementById('sizeFilter').value = '';
+            document.getElementById('jobTypeFilter').value = '';
+            filterTable();
+        }
+
+        // CSV 다운로드
+        function downloadCSV() {
+            const headers = ['기업명', '직무', '규모', '산업', '지역', '고용형태', '마감일', '급여', 'URL'];
+            const csvContent = [
+                headers.join(','),
+                ...filteredData.map(job => [
+                    job.company_name,
+                    job.job_title,
+                    job.company_size,
+                    job.industry,
+                    job.location,
+                    job.job_type,
+                    job.deadline,
+                    job.salary,
+                    job.job_url
+                ].map(field => `"${field}"`).join(','))
+            ].join('\n');
+
+            const BOM = '\uFEFF';
+            const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `unijob_filtered_${new Date().getTime()}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 통계 계산
+        function calculateStats() {
+            const totalJobs = jobsData.length;
+            const uniqueCompanies = [...new Set(jobsData.map(j => j.company_name).filter(x => x && x !== 'Company TBD'))].length;
+            const uniqueLocations = [...new Set(jobsData.map(j => j.location).filter(x => x))].length;
+            
+            const industryCounts = {};
+            jobsData.forEach(job => {
+                if (job.industry) {
+                    industryCounts[job.industry] = (industryCounts[job.industry] || 0) + 1;
+                }
+            });
+            
+            const topIndustry = Object.keys(industryCounts).length > 0 ?
+                Object.keys(industryCounts).reduce((a, b) => industryCounts[a] > industryCounts[b] ? a : b) : '-';
+
+            document.getElementById('totalJobs').textContent = totalJobs.toLocaleString();
+            document.getElementById('totalCompanies').textContent = uniqueCompanies.toLocaleString();
+            document.getElementById('topIndustry').textContent = topIndustry;
+            document.getElementById('totalLocations').textContent = uniqueLocations;
+        }
+
+        // 통계 차트 생성
+        function createStatisticsCharts() {
+            createIndustryChart();
+            createSizeChart();
+            createLocationChart();
+            createJobTypeChart();
+            createMonthlyChart();
+            createKeywordChart();
+        }
+
+        function createIndustryChart() {
+            const industryCounts = {};
+            jobsData.forEach(job => {
+                if (job.industry) {
+                    industryCounts[job.industry] = (industryCounts[job.industry] || 0) + 1;
+                }
+            });
+
+            const ctx = document.getElementById('industryChart');
+            charts.industry = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(industryCounts),
+                    datasets: [{
+                        data: Object.values(industryCounts),
+                        backgroundColor: [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                            '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
+                }
+            });
+        }
+
+        function createSizeChart() {
+            const sizeCounts = {};
+            jobsData.forEach(job => {
+                if (job.company_size) {
+                    sizeCounts[job.company_size] = (sizeCounts[job.company_size] || 0) + 1;
+                }
+            });
+
+            const ctx = document.getElementById('sizeChart');
+            charts.size = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(sizeCounts),
+                    datasets: [{
+                        data: Object.values(sizeCounts),
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
+                }
+            });
+        }
+
+        function createLocationChart() {
+            const locationCounts = {};
+            jobsData.forEach(job => {
+                if (job.location) {
+                    locationCounts[job.location] = (locationCounts[job.location] || 0) + 1;
+                }
+            });
+
+            const sortedLocations = Object.entries(locationCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+
+            const ctx = document.getElementById('locationChart');
+            charts.location = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedLocations.map(l => l[0]),
+                    datasets: [{
+                        label: '채용 공고 수',
+                        data: sortedLocations.map(l => l[1]),
+                        backgroundColor: '#4A90E2'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function createJobTypeChart() {
+            const typeCounts = {};
+            jobsData.forEach(job => {
+                if (job.job_type) {
+                    typeCounts[job.job_type] = (typeCounts[job.job_type] || 0) + 1;
+                }
+            });
+
+            const ctx = document.getElementById('jobTypeChart');
+            charts.jobType = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(typeCounts),
+                    datasets: [{
+                        data: Object.values(typeCounts),
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
+                }
+            });
+        }
+
+        function createMonthlyChart() {
+            const monthlyCounts = {};
+            jobsData.forEach(job => {
+                if (job.collection_time) {
+                    const date = new Date(job.collection_time);
+                    const month = date.getMonth() + 1;
+                    monthlyCounts[month] = (monthlyCounts[month] || 0) + 1;
+                }
+            });
+
+            const months = Array.from({length: 12}, (_, i) => i + 1);
+            const data = months.map(m => monthlyCounts[m] || 0);
+
+            const ctx = document.getElementById('monthlyChart');
+            charts.monthly = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months.map(m => m + '월'),
+                    datasets: [{
+                        label: '채용 공고 수',
+                        data: data,
+                        borderColor: '#4A90E2',
+                        backgroundColor: 'rgba(74, 144, 226, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function createKeywordChart() {
+            const keywordCounts = {};
+            jobsData.forEach(job => {
+                if (job.keyword_matched) {
+                    keywordCounts[job.keyword_matched] = (keywordCounts[job.keyword_matched] || 0) + 1;
+                }
+            });
+
+            const sortedKeywords = Object.entries(keywordCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+
+            const ctx = document.getElementById('keywordChart');
+            charts.keyword = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedKeywords.map(k => k[0]),
+                    datasets: [{
+                        label: '매칭 수',
+                        data: sortedKeywords.map(k => k[1]),
+                        backgroundColor: '#9966FF'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // 기업 분석 차트
+        function createCompanyCharts() {
+            const companyCounts = {};
+            jobsData.forEach(job => {
+                if (job.company_name && job.company_name !== 'Company TBD') {
+                    companyCounts[job.company_name] = (companyCounts[job.company_name] || 0) + 1;
+                }
+            });
+
+            const sortedCompanies = Object.entries(companyCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 20);
+
+            // TOP 20 기업 리스트
+            const listContainer = document.getElementById('topCompaniesList');
+            listContainer.innerHTML = '';
+            
+            sortedCompanies.forEach(([company, count], index) => {
+                const item = document.createElement('div');
+                item.className = 'company-item';
+                item.innerHTML = `
+                    <div class="company-rank">#${index + 1}</div>
+                    <div class="company-info">
+                        <div class="company-name">${company}</div>
+                        <div class="company-count">${count}개 채용공고</div>
+                    </div>
+                `;
+                listContainer.appendChild(item);
+            });
+
+            // 기업별 차트
+            const ctx = document.getElementById('companyChart');
+            charts.company = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedCompanies.map(c => c[0]),
+                    datasets: [{
+                        label: '채용 공고 수',
+                        data: sortedCompanies.map(c => c[1]),
+                        backgroundColor: '#FF6384'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // 교차 분석
+            createCrossAnalysisChart();
+        }
+
+        function createCrossAnalysisChart() {
+            const crossData = {};
+            jobsData.forEach(job => {
+                if (job.industry && job.company_size) {
+                    const key = `${job.industry}_${job.company_size}`;
+                    crossData[key] = (crossData[key] || 0) + 1;
+                }
+            });
+
+            const industries = [...new Set(jobsData.map(j => j.industry).filter(x => x))].slice(0, 6);
+            const sizes = [...new Set(jobsData.map(j => j.company_size).filter(x => x))].slice(0, 4);
+
+            const datasets = sizes.map((size, index) => ({
+                label: size,
+                data: industries.map(ind => crossData[`${ind}_${size}`] || 0),
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'][index]
+            }));
+
+            const ctx = document.getElementById('crossChart');
+            charts.cross = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: industries,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // 트렌드 차트
+        function createTrendCharts() {
+            createCollectionChart();
+            createDeadlineChart();
+            createQualityChart();
+            createEmployeeChart();
+        }
+
+        function createCollectionChart() {
+            const collectionDates = {};
+            jobsData.forEach(job => {
+                if (job.collection_time) {
+                    const date = job.collection_time.split(' ')[0];
+                    collectionDates[date] = (collectionDates[date] || 0) + 1;
+                }
+            });
+
+            const sortedDates = Object.entries(collectionDates).sort();
+
+            const ctx = document.getElementById('collectionChart');
+            charts.collection = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sortedDates.map(d => d[0]),
+                    datasets: [{
+                        label: '수집 공고 수',
+                        data: sortedDates.map(d => d[1]),
+                        borderColor: '#36A2EB',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function createDeadlineChart() {
+            const deadlineCounts = {
+                'D-7 이내': 0,
+                'D-14 이내': 0,
+                'D-30 이내': 0,
+                '상시채용': 0,
+                '미정': 0
+            };
+
+            jobsData.forEach(job => {
+                if (!job.deadline || job.deadline.includes('Deadline TBD')) {
+                    deadlineCounts['미정']++;
+                } else if (job.deadline.includes('D-')) {
+                    const match = job.deadline.match(/D-(\d+)/);
+                    if (match) {
+                        const days = parseInt(match[1]);
+                        if (days <= 7) deadlineCounts['D-7 이내']++;
+                        else if (days <= 14) deadlineCounts['D-14 이내']++;
+                        else if (days <= 30) deadlineCounts['D-30 이내']++;
+                        else deadlineCounts['상시채용']++;
+                    }
+                } else {
+                    deadlineCounts['상시채용']++;
+                }
+            });
+
+            const ctx = document.getElementById('deadlineChart');
+            charts.deadline = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(deadlineCounts),
+                    datasets: [{
+                        data: Object.values(deadlineCounts),
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
+                }
+            });
+        }
+
+        function createQualityChart() {
+            const total = jobsData.length;
+            const quality = {
+                '회사명': jobsData.filter(j => j.company_name && j.company_name !== 'Company TBD').length / total * 100,
+                '연봉정보': jobsData.filter(j => j.salary && j.salary !== 'Salary TBD').length / total * 100,
+                '마감일': jobsData.filter(j => j.deadline && j.deadline !== 'Deadline TBD').length / total * 100,
+                '직원수': jobsData.filter(j => j.employee_count && j.employee_count !== 'Unknown').length / total * 100
+            };
+
+            const ctx = document.getElementById('qualityChart');
+            charts.quality = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: Object.keys(quality),
+                    datasets: [{
+                        label: '정보 완성도 (%)',
+                        data: Object.values(quality),
+                        backgroundColor: 'rgba(74, 144, 226, 0.2)',
+                        borderColor: '#4A90E2',
+                        pointBackgroundColor: '#4A90E2',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#4A90E2'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createEmployeeChart() {
+            const employeeCounts = {};
+            jobsData.forEach(job => {
+                if (job.employee_count && job.employee_count !== 'Unknown') {
+                    employeeCounts[job.employee_count] = (employeeCounts[job.employee_count] || 0) + 1;
+                }
+            });
+
+            const sortedEmployees = Object.entries(employeeCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+
+            const ctx = document.getElementById('employeeChart');
+            charts.employee = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedEmployees.map(e => e[0]),
+                    datasets: [{
+                        label: '기업 수',
+                        data: sortedEmployees.map(e => e[1]),
+                        backgroundColor: '#FFCE56'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
