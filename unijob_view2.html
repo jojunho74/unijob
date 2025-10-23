@@ -745,7 +745,7 @@
                         <th class="sortable" onclick="sortTable(3)">지역</th>
                         <th class="sortable" onclick="sortTable(4)">고용형태</th>
                         <th class="sortable" onclick="sortTable(5)">마감일</th>
-                        <th>상세</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
@@ -993,7 +993,6 @@
                     <td>${job.location || '미등록'}</td>
                     <td>${job.jobType || '미등록'}</td>
                     <td>${job.deadline || '미정'}</td>
-                    <td><button class="btn btn-primary" style="padding: 5px 10px; font-size: 12px;" onclick="event.stopPropagation(); showDetail(filteredData[${start + index}])">상세</button></td>
                 `;
                 tbody.appendChild(row);
             });
