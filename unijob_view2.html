@@ -744,8 +744,6 @@
                         <th class="sortable" onclick="sortTable(2)">산업(모집분야별)</th>
                         <th class="sortable" onclick="sortTable(3)">지역</th>
                         <th class="sortable" onclick="sortTable(4)">고용형태</th>
-                        <th class="sortable" onclick="sortTable(5)">마감일</th>
-                        <th></th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
@@ -992,7 +990,6 @@
                     <td>${job.industry || '미등록'}</td>
                     <td>${job.location || '미등록'}</td>
                     <td>${job.jobType || '미등록'}</td>
-                    <td>${job.deadline || '미정'}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -1040,10 +1037,6 @@
                 <div class="info-row">
                     <div class="info-label">고용 형태</div>
                     <div class="info-value">${job.jobType || '미등록'}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">마감일</div>
-                    <div class="info-value">${job.deadline || '미정'}</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">급여</div>
